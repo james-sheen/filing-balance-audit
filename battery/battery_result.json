@@ -1,0 +1,91 @@
+{
+ "legs": [
+  {
+   "leg": "engine",
+   "code": 0,
+   "note": "4 behaviours this design rests on, measured on the installed engine",
+   "built": true
+  },
+  {
+   "leg": "conformance",
+   "code": 0,
+   "note": "nothing reached past the protocol, either way",
+   "built": true
+  },
+  {
+   "leg": "live",
+   "code": 0,
+   "note": "read the quarter and reproduced the committed evidence byte for byte, 6,237 reading(s)",
+   "built": true
+  },
+  {
+   "leg": "draft",
+   "code": 0,
+   "note": "an unsigned declaration is produced, and `declare` is already where it stops",
+   "built": true
+  },
+  {
+   "leg": "gate",
+   "code": 0,
+   "note": "the unsigned draft is refused by name and exits 2",
+   "built": true
+  },
+  {
+   "leg": "clean",
+   "code": 0,
+   "note": "6 known faults removed and the remaining corpus is quiet",
+   "built": true
+  },
+  {
+   "leg": "fault",
+   "code": 0,
+   "note": "4/4 classes behaved as declared before the run",
+   "built": true
+  },
+  {
+   "leg": "absent",
+   "code": 0,
+   "note": "a declared filing with no reading is reported, not dropped",
+   "built": true
+  },
+  {
+   "leg": "attest",
+   "code": 2,
+   "note": "NOT BUILT: this package has no attestation surface. The leg is named rather than dropped so the table stays twelve long and the gap is in the summary, not only in FINDINGS.md",
+   "built": false
+  },
+  {
+   "leg": "pipe",
+   "code": 0,
+   "note": "a closed reader neither changed the verdict (120) nor printed a traceback",
+   "built": true
+  },
+  {
+   "leg": "tool",
+   "code": 2,
+   "note": "NOT BUILT: no tool or MCP surface. Same reason as attest",
+   "built": false
+  },
+  {
+   "leg": "suite",
+   "code": 0,
+   "note": "from a directory that is not the repository: 88 passed in 5.02s",
+   "built": true
+  },
+  {
+   "leg": "pin",
+   "code": 0,
+   "note": "arbiter-engine>=0.1.12,<0.2: 2 in range, floor-holds; presence-audit>=0.1.7,<0.2: 1 in range, floor-higher-than-measured",
+   "built": true
+  },
+  {
+   "leg": "ship",
+   "code": 0,
+   "note": "the built wheel, installed clean, reports the same 6 filings at exit 1",
+   "built": true
+  }
+ ],
+ "exit": 0,
+ "only": null,
+ "quarter_supplied": true
+}

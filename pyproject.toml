@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "filing-balance-audit"
+dynamic = ["version"]
+description = "Of the filings a period says should balance, which do, which cannot be checked, and which do not"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{name = "James Sheen"}]
+keywords = ["sec", "xbrl", "balance-sheet", "audit", "arbiter"]
+
+# Stage 1 -- reading a declaration, reading a capture, and pairing them -- has no
+# dependency on the engine. That is a claim this package asserts rather than
+# describes: `tests/test_stage_one_is_dependency_free.py` imports every Stage 1
+# module with the engine made unimportable.
+# The shared core. Stage 1 -- reading, pairing, reporting -- depends on this and
+# on nothing else; the ENGINE is the optional extra below, and that is the claim
+# `tests/test_stage_one_is_dependency_free.py` asserts by making the engine
+# unimportable and running the whole pairing path.
+#
+# THE FLOOR IS HIGHER THAN THIS SUITE CAN DEMONSTRATE, AND IT STAYS.
+# `battery/probe_pin.py --sweep` reports 0.1.7 and 0.1.6 both passing and 0.1.5
+# failing, so nothing here measured 0.1.7. It is kept anyway, for a measurement
+# somebody else took: the consulting vertical in this family probed the same range
+# and 0.1.6 fails its suite, on exit-contract behaviour this package does not
+# exercise. Lowering to what this oracle reaches would claim support for a release
+# a sibling has already measured broken.
+#
+# That is a floor from a specification rather than from a guess, which is what the
+# method asks for -- it is just not a specification this repository produced.
+dependencies = ["presence-audit>=0.1.7,<0.2"]
+
+[project.optional-dependencies]
+# MEASURED FLOOR, and it is one release lower than the number this package was
+# built against. `battery/probe_pin.py --sweep` installs each release below the
+# floor and runs the suite there: 0.1.12 and 0.1.13 pass all 60, and 0.1.11 fails
+# one.
+#
+# The failure is the reason the floor is where it is, and it is the failure that
+# would be silent. On 0.1.11 an agreement block carrying NO tolerance still
+# ANSWERS, from a global 5% relative fallback. This package's whole subject is a
+# one-dollar discrepancy against a ninety-four-million-dollar balance sheet --
+# six decimal places inside any relative margin anybody would pick -- so on that
+# release every real fault in the corpus is reported as agreement. From 0.1.12
+# the engine declines instead and says why.
+#
+# 0.1.13 was the declared floor before the probe existed, and it came from a
+# design note: it was the release this was built against. Nothing had been run
+# below it.
+engine = ["arbiter-engine>=0.1.12,<0.2"]
+
+[project.scripts]
+filing-balance-audit = "filing_balance_audit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/james-sheen/filing-balance-audit"
+Issues = "https://github.com/james-sheen/filing-balance-audit/issues"
+Source = "https://github.com/james-sheen/filing-balance-audit"
+
+[tool.hatch.version]
+path = "src/filing_balance_audit/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/filing_balance_audit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
