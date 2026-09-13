@@ -15,7 +15,7 @@
   {
    "leg": "live",
    "code": 0,
-   "note": "re-derived under a fresh salt and matched the committed corpus up to relabelling",
+   "note": "read the quarter and reproduced the committed evidence byte for byte, 6,237 reading(s)",
    "built": true
   },
   {
@@ -57,7 +57,7 @@
   {
    "leg": "attest",
    "code": 2,
-   "note": "NOT BUILT: this package has no attestation surface. The leg is named rather than dropped so the table stays twelve long and the gap is in the summary, not only in FINDINGS.md",
+   "note": "NOT BUILT: this package has no attestation surface. The leg is named rather than dropped so the table keeps its full length and the gap is in the summary, not only in FINDINGS.md",
    "built": false
   },
   {
@@ -75,7 +75,7 @@
   {
    "leg": "suite",
    "code": 0,
-   "note": "from a directory that is not the repository: 169 passed in 4.88s",
+   "note": "from a directory that is not the repository: 158 passed in 4.97s",
    "built": true
   },
   {

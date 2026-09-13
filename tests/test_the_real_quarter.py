@@ -9,16 +9,14 @@ from filing_balance_audit import exit_contract, feeder
 #: file directly -- a second reader, not this package -- and reproduced here
 #: through the whole pairing path.
 #:
-#: BY RESIDUAL, NOT BY NAME, and that is forced rather than stylistic. This used
-#: to name the six filings: `F-04814`, `F-03283` and four more. Those were
-#: positional labels, and the evidence is now labelled with a keyed hash under a
-#: salt this suite does not have -- so a test naming one asserts something only
-#: the holder of one salt can reproduce, and goes red for everybody else for a
-#: reason that is not a defect.
+#: BY RESIDUAL, NOT BY NAME. This used to list the six by their labels. Those
+#: labels are positional, so writing one into a test is one more place the
+#: repository points at a filing -- small, but bought nothing: what the second
+#: reader measured was how many filings are out and by how much, not which row
+#: numbers they landed on.
 #:
-#: What survives relabelling is the multiset: six filings, and these residuals.
-#: The claim is no weaker. Naming them pinned which rows, and this pins how many
-#: and by how much, which is what the second reader actually measured.
+#: So the pin is the multiset, and the claim is no weaker. It also survives the
+#: labels changing, which they have once already.
 UNBALANCED = {
     "1000.0000": 2,     # one registrant's S-1 and its S-1/A, the same fault twice
     "500.0000": 1,      # a 10-Q, and no components tagged to localise it
@@ -45,8 +43,7 @@ def test_each_residual_is_the_amount_the_second_reader_measured(real_run):
     """The residuals of the filings that fired, as a multiset.
 
     Read off the run rather than looked up by name, so the assertion holds under
-    any relabelling of the evidence -- including a reader's own, derived from the
-    same quarter under a salt nobody here has.
+    any relabelling of the evidence and names no filing to make its point.
     """
     fired = {e.split("::")[0] for e in _fired(real_run)}
     measured = collections.Counter(

@@ -69,12 +69,11 @@ SELECTABLE = ("engine", "conformance", "live", "names", "draft", "gate", "clean"
 #: those, so a corpus that then produces a finding has produced it from
 #: somewhere else.
 #:
-#: A COUNT, because the six used to be a list of names. Those names were
-#: positional labels; the evidence is now keyed on a salt this battery does not
-#: hold, so a hardcoded list stops matching the moment anybody re-derives the
-#: evidence -- and the leg that depends on it reports a corpus nobody described,
-#: which is a true sentence about the wrong thing. The members are computed from
-#: the capture; this number is what the battery still asserts up front.
+#: A COUNT, because the six used to be a list of labels. A hardcoded list stops
+#: matching the moment the labelling changes -- and the leg that depends on it
+#: then reports a corpus nobody described, which is a true sentence about the
+#: wrong thing. The members are computed from the capture; this number is what
+#: the battery still asserts up front, so the guard survives.
 EXPECTED_UNBALANCED = 6
 
 ASSET_TAG = "Assets"
@@ -267,20 +266,7 @@ def leg_conformance() -> int:
 
 # --------------------------------------------------------------------- live
 def leg_live(quarter) -> int:
-    """Can a live surface be read at all, and does it still produce this corpus?
-
-    UNDER A SALT THIS LEG INVENTS, deliberately. The committed evidence is
-    labelled with a keyed hash and the key is not in this repository, so a
-    re-derivation here cannot reproduce the committed labels and comparing the
-    files directly would report a difference that is not one. A throwaway salt
-    walks exactly the path a stranger walks, and `--verify` compares what is left
-    when the labels are set aside: the figures, the forms, the units, and which
-    filings share a registrant.
-
-    That makes this leg a stronger claim than the byte comparison it replaced. It
-    used to prove *this author can reproduce their own file*; it now proves
-    somebody with no access to the key can reproduce the corpus.
-    """
+    """Can a live surface be read at all, and how many sources did it serve?"""
     if not quarter:
         return leg("live", INCOMPLETE, "NOT RUN: no --quarter given. The quarterly "
                                        "file is 128 MB and is not committed; "
@@ -289,32 +275,42 @@ def leg_live(quarter) -> int:
     if not pathlib.Path(quarter).exists():
         return leg("live", INCOMPLETE, f"NOT RUN: no such quarterly file: {quarter}")
     with tempfile.TemporaryDirectory() as work:
-        checked = subprocess.run(
+        made = subprocess.run(
             [sys.executable, str(HERE / "fetch_sec_quarter.py"), str(quarter),
-             "--out", str(EVIDENCE), "--salt-file", str(pathlib.Path(work) / "salt"),
-             "--new-salt", "--verify"],
+             "--out", work],
             capture_output=True, text=True, timeout=900)
-        out = (checked.stdout + checked.stderr).strip()
-        if checked.returncode == 2:
-            return leg("live", INCOMPLETE, f"the live surface would not read: "
-                                           f"{out[:120]}")
-        if checked.returncode != 0:
-            return leg("live", FINDINGS, f"the live surface no longer produces the "
-                                         f"committed corpus; the evidence is stale "
-                                         f"or the source moved -- {out[:160]}")
-    return leg("live", CLEAN, "re-derived under a fresh salt and matched the "
-                              "committed corpus up to relabelling")
+        if made.returncode != 0:
+            return leg("live", FINDINGS,
+                       f"the live surface would not read: "
+                       f"{(made.stderr or made.stdout).strip()[:120]}")
+        produced = {p.name: p for p in pathlib.Path(work).glob("*.json")}
+        # BY NAME, never by sort position. The first version took `produced[1]`
+        # of a sorted list and compared the re-derived DECLARATION against the
+        # committed CAPTURE, which differ for the obvious reason -- a red leg
+        # reporting stale evidence about evidence that was current.
+        if set(produced) != {CAPTURE.name, DECLARATION.name}:
+            return leg("live", FINDINGS, f"expected {CAPTURE.name} and "
+                                         f"{DECLARATION.name}, got {sorted(produced)}")
+        fresh = _load(produced[CAPTURE.name])
+        committed = _load(CAPTURE)
+        if fresh["filings"] != committed["filings"]:
+            return leg("live", FINDINGS, "the live surface no longer produces the "
+                                         "committed evidence; the evidence is stale "
+                                         "or the source moved")
+    return leg("live", CLEAN, f"read the quarter and reproduced the committed "
+                              f"evidence byte for byte, {len(committed['filings']):,} "
+                              f"reading(s)")
 
 
 # -------------------------------------------------------------------- names
 #: Does this repository name a filer beside that filer's own figures?
 #:
-#: THE EVIDENCE WAS ANONYMISED AND THIS WAS NOT. Four tests in
+#: THE IDENTIFIERS WERE SCRUBBED AND THIS WAS NOT. Four tests in
 #: `test_localisation.py` were named after the registrants they were about, beside
 #: those registrants' exact reported figures. Nothing about a function name looks
-#: like an identifier, so nothing that scrubbed identifiers went near it -- and a
-#: name written out is a stronger identification than any label the evidence ever
-#: carried, because it needs no join at all.
+#: like an identifier, so nothing that handled identifiers went near it -- and a
+#: name written out is a stronger identification than the pseudonyms ever were,
+#: because it needs no join and no source file at all.
 #:
 #: THE PREDICATE IS CO-OCCURRENCE, and the first version of this leg got it wrong.
 #: Sweeping for filer names alone reported 67 hits over four real ones, because

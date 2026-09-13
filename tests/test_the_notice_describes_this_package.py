@@ -3,10 +3,9 @@
 It was wrong. This package's `NOTICE` was copied from the consulting vertical and
 only its first line was changed, so it went on describing *deliverables a
 statement of work says should exist* and asserting that **nothing named anywhere
-here is real**. The evidence in this repository reports real discrepancies in
-real published balance sheets, and named real registrants when that was written.
-The legal notice said the opposite of the truth about the one thing it exists to
-be believed on.
+here is real**. The evidence in this repository names real registrants and reports
+real discrepancies in real published balance sheets. The legal notice said the
+opposite of the truth about the one thing it exists to be believed on.
 
 No test could have caught it, because nothing imports `NOTICE`. These assertions
 are the cheapest thing that can.
@@ -74,51 +73,33 @@ def test_the_notice_matches_what_the_evidence_actually_is():
 
     IT HAS ALREADY CAUGHT ONE. The notice said *the companies named in that
     evidence are real*, which was true when written. The evidence was then
-    re-derived without names and the sentence became false -- and this test went
+    re-derived pseudonymously and the sentence became false -- and this test went
     red on the same commit, which is the entire reason it exists.
 
     So it reads the evidence, decides what the evidence IS, and holds the notice
-    to that rather than to a remembered state. It has now been re-pointed a
-    second time, for the same reason in the other direction: the labels were
-    positional, the notice correctly called that pseudonymity and NOT anonymity,
-    and the labels are now a keyed hash under an unpublished salt. The old
-    assertions would hold a truthful notice to a retired description.
+    to that rather than to a remembered state.
     """
     declaration = json.loads(
         (ROOT / "evidence" / "2025q1-declaration.json").read_text())
-    assert declaration["identifiers"] == "hashed"
-    scheme = declaration["identifier_scheme"]
-    assert scheme["salt"].startswith("NOT PUBLISHED")
-    assert all(re.fullmatch(r"F-[0-9a-f]{12}", f["id"])
-               for f in declaration["filings"])
+    pseudonymous = declaration["identifiers"] == "pseudonymous"
+    assert pseudonymous, "the committed evidence should ship pseudonymous"
+    assert all(f["id"].startswith("F-") for f in declaration["filings"])
     assert not re.search(r'"cik": "\d+"', json.dumps(declaration))
 
-    assert "salt" in FLAT
-    assert "not published" in FLAT
-    # The residual channel, disclosed. Closing the label channel does not close
-    # this one and the notice has to say so -- an artefact claiming more privacy
-    # than it has is the failure this whole change exists to avoid.
+    # The capture too, not only the declaration. Both files ship, and a check
+    # that reads one of two is a check with a blind half.
+    capture = json.loads((ROOT / "evidence" / "2025q1-capture.json").read_text())
+    assert not re.search(r'"id": "\d[\d-]*"', json.dumps(capture))
+
+    assert "pseudonym" in FLAT
+    assert "not anonymity" in FLAT
+    # The figures channel, disclosed. The pseudonyms are the weaker half of what
+    # this evidence does not say, and the notice has to carry the stronger half:
+    # the figures identify a filer to anyone holding the same public quarter,
+    # whatever the labels are. Asserted here because an omission in a legal
+    # notice reads exactly like an absence of the problem.
     assert "join key" in FLAT
     # and it must not claim the figures are invented, which they are not
     for denial in ("every example is synthetic", "nothing here is real"):
         assert denial not in FLAT, denial
     assert "as filed" in FLAT
-
-
-def test_the_notice_does_not_still_describe_the_retired_scheme():
-    """The sentences most at risk are the ones that were ABOUT the old scheme.
-
-    `positional` and `pseudonym` were load-bearing words here while the labels
-    were assigned by sorted position. They are now false of the evidence, and
-    false in the most convincing way: they read as careful disclosure. Allowed
-    only where the notice is explicitly narrating what changed.
-    """
-    # BY SENTENCE, not by line. The first version of this walked `splitlines()`
-    # and failed on a sentence whose past-tense marker had wrapped onto the line
-    # above -- the same defect `FLAT` exists for, reintroduced two screens below
-    # the comment that names it.
-    for sentence in re.split(r"(?<=[.!?])\s+", " ".join(NOTICE.split())):
-        low = sentence.lower()
-        if "pseudonym" in low or "positional" in low:
-            assert any(marker in low for marker in
-                       ("was", "were", "used to", "briefly", "then")), sentence

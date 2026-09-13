@@ -118,10 +118,9 @@ def test_peer_groups_pairs_an_amendment_with_its_original(real_period, real_run)
     thousand-dollar discrepancy -- which is how the fault is shown to be in the
     statement rather than in one transcription of it.
 
-    The pair is found BY ITS RESIDUAL and not by name. It used to be named, with
-    the two positional labels; the evidence is now keyed on a salt this suite
-    does not hold, so the only durable way to say *those two* is the thing that
-    makes them interesting -- they are the two filings a thousand out.
+    The pair is found BY ITS RESIDUAL and not by name. Naming it meant writing
+    two labels into the suite; what actually identifies the pair, and what makes
+    it worth a test, is that they are the two filings a thousand out.
     """
     groups = VOCABULARY.peer_groups(real_period)
     assert groups, "no peer group was found in a real quarter"

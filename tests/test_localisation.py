@@ -4,10 +4,11 @@ Every case below is a real filing from 2025q1. The numbers are as filed.
 
 THESE TESTS USED TO BE NAMED AFTER THE FILERS. Four of them carried a real
 registrant's name in the function name, beside that registrant's exact reported
-figures, in a test about their balance sheet not balancing. The evidence files
-were anonymised and this was not, because nothing about it looks like an
-identifier -- it is a function name. It named the company outright, which is a
-stronger identification than anything the evidence ever carried.
+figures, in a test about their balance sheet not balancing. The evidence carries
+pseudonyms and this did not, because nothing about it looks like an identifier --
+it is a function name. It named the company outright, which is a stronger
+identification than the pseudonyms ever were: no source file needed, no sorting,
+just reading.
 
 So a case is described by its shape. The figures stay: they are the specification,
 and they are as filed.

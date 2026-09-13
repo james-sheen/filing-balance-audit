@@ -18,19 +18,21 @@ that repository's `BRIDGES.md`.
 >
 > Every figure in `evidence/` is as filed and six balance sheets in it do not
 > balance, but the filers are **not named** -- accession numbers and registrants
-> carry keyed hashes under a salt that is not published and is not in this
-> repository, so the mapping cannot be recovered from anything here.
+> carry stable pseudonyms. That is pseudonymity, not anonymity: the source is
+> public and the scheme is positional, so the mapping is recoverable with
+> `fetch_sec_quarter.py --named`. What this repository does not publish is the
+> mapping.
 >
-> The figures themselves are a different matter and `NOTICE` says so: 93% of rows
-> carry a combination of values unique within the quarter, so a reader holding the
-> same public file can match one to a filer by its numbers alone. Anonymising the
-> labels does not close that, and keeping the figures exact is the point of the
-> package.
+> The pseudonyms are the weaker half of that. **The figures are a join key**: 93%
+> of rows carry a combination of values unique within the quarter, so a reader
+> holding the same public file can match one to a filer by its numbers alone. No
+> labelling closes that, and keeping the figures exact is the point of the
+> package. Full statement in [`NOTICE`](NOTICE).
 
 ```
 $ filing-balance-audit detect evidence/2025q1-declaration.json evidence/2025q1-capture.json
 period 2025q1: 6,083 filing(s) checked against a tolerance of 0
-  F-ad464bc48688 Registrant R-bd643c517b18            USD
+  F-03283 a filing of registrant R-1367            USD
       the assets figure is the odd one out
       assets_vs_total: -1.0000
       parts_vs_assets: 1.0000
@@ -41,9 +43,8 @@ OUTCOME exit=1 verdict=findings
 ```
 
 Six filings in that quarter publish a balance sheet that does not balance, by one
-dollar to one thousand. The figures are real; the labels are not, and they are not
-stable across readers -- re-derive the evidence under your own salt and the same
-six filings come back under six different names.
+dollar to one thousand. The discrepancies are real; the labels above are
+pseudonyms.
 
 ## The corpus was measured before this was designed
 
@@ -84,8 +85,9 @@ pattern of findings localises it.
 - All three differ -> **nothing is claimed.** One 10-Q files 35,126 / 35,128 /
   35,129 and no reading of that filing says which was meant.
 
-Described rather than named, because the labels move with whoever derived the
-evidence. The figures do not.
+Described rather than labelled: a pseudonym in prose is one more place this
+repository points at a filing, and the shape is what makes the case worth the
+bullet.
 
 The components are used as a second route **only where they reconcile to one side**.
 Where they reconcile to neither, the credit side has members outside the two tags

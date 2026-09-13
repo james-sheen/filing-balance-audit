@@ -57,9 +57,9 @@ def _run(model, properties):
 MODEL = feeder.model_text(_Period())
 
 #: A 10-K in 2025q1, as filed: one dollar on ninety-four million. The figures are
-#: real; the filer is not named in the committed evidence, whose labels are keyed
-#: on an unpublished salt. `fetch_sec_quarter.py --named` recovers the real
-#: identifiers from the source for anyone who wants them.
+#: real; the filer is not named in the committed evidence, which carries
+#: pseudonyms. `fetch_sec_quarter.py --named` recovers the real identifiers from
+#: the source for anyone who wants them.
 ONE_DOLLAR_OUT = {"assets": 93840769, "balance_sheet_total": 93840770,
              "parts_sum": 93840770}
 

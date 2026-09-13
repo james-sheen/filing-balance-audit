@@ -22,10 +22,9 @@ Both shapes are in the real corpus. One 10-Q files parts that sum to its assets
 and a total one dollar below both; one 10-K files parts that sum to its total and
 assets one dollar below. One arm cannot tell them apart.
 
-Described and not named, here and below. The evidence is labelled with a keyed
-hash under a salt that is not published, so a label in a docstring names a filing
-only for whoever holds that one salt -- and reads like a durable reference to
-everybody else.
+Described and not named, here and below. A label in a docstring is one more
+place this package points at a filing, and it buys nothing: what makes these two
+worth the paragraph is their shape, which no relabelling touches.
 
 THE SECOND ROUTE IS NOT ALWAYS A ROUTE, AND THAT WAS FOUND BY RUNNING IT. The
 first version of this fed the parts sum whenever the tags were present. Against

@@ -9,10 +9,3 @@ build/
 # private identifier has to name it, so committing this file would publish
 # exactly what it exists to protect. See tools/hygiene_check.py.
 .hygiene-local.json
-
-# The salt the evidence labels are keyed on, if anybody keeps one in the tree.
-# Committing it makes the labels invertible: 6,231 filings and 5,672 registrants
-# are small enough to enumerate, so a published salt is no salt. Keep it outside
-# the repository; this line is the second line of defence, not the first.
-*.salt
-salt
