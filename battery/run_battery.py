@@ -26,10 +26,13 @@ arrive together and a scanner sees both.
 from __future__ import annotations
 
 import argparse
+import collections
 import copy
+import decimal
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -59,15 +62,48 @@ ENGINE_PATH = os.environ.get("ARBITER_ENGINE", "")
 #: Every leg, by the name it reports under. `--only` is validated against this:
 #: a mistyped name would otherwise select nothing, and a battery that ran nothing
 #: exits 0.
-SELECTABLE = ("engine", "conformance", "live", "draft", "gate", "clean", "fault",
-              "absent", "attest", "pipe", "tool", "suite", "pin", "ship")
+SELECTABLE = ("engine", "conformance", "live", "names", "draft", "gate", "clean",
+              "fault", "absent", "attest", "pipe", "tool", "suite", "pin", "ship")
 
-#: The filings in 2025q1 that do not balance. The `clean` leg removes exactly
-#: these, so a corpus that then produces a finding has produced it from
+#: How many filings in 2025q1 do not balance. The `clean` leg removes exactly
+#: those, so a corpus that then produces a finding has produced it from
 #: somewhere else.
-UNBALANCED = ("F-04814", "F-04795",
-              "F-01901", "F-05665",
-              "F-03283", "F-03970")
+#:
+#: A COUNT, because the six used to be a list of names. Those names were
+#: positional labels; the evidence is now keyed on a salt this battery does not
+#: hold, so a hardcoded list stops matching the moment anybody re-derives the
+#: evidence -- and the leg that depends on it reports a corpus nobody described,
+#: which is a true sentence about the wrong thing. The members are computed from
+#: the capture; this number is what the battery still asserts up front.
+EXPECTED_UNBALANCED = 6
+
+ASSET_TAG = "Assets"
+TOTAL_TAGS = ("LiabilitiesAndStockholdersEquity", "EquityAndLiabilities")
+
+
+def unbalanced_ids(capture) -> set[str]:
+    """The filings in a capture whose two sides differ, by reading it.
+
+    Deliberately NOT the package's own feeder. This is the battery, and a check
+    whose expectation is produced by the code under test cannot falsify it.
+    Assets against the total, in decimal, under either taxonomy -- which is the
+    whole identity, short enough to restate independently here.
+    """
+    out = set()
+    for f in capture["filings"]:
+        total = next((f["readings"][t] for t in TOTAL_TAGS if t in f["readings"]), None)
+        if total is None or "Assets" not in f["readings"]:
+            continue
+        try:
+            assets, total = decimal.Decimal(f["readings"]["Assets"]), decimal.Decimal(total)
+        except decimal.InvalidOperation:
+            # 25 values in this corpus do not parse exactly, and the package
+            # records them rather than dropping them. A filing whose figures
+            # cannot be read is not a filing whose balance sheet disagrees.
+            continue
+        if assets != total:
+            out.add(f["id"])
+    return out
 
 RESULTS: list[dict] = []
 
@@ -231,7 +267,20 @@ def leg_conformance() -> int:
 
 # --------------------------------------------------------------------- live
 def leg_live(quarter) -> int:
-    """Can a live surface be read at all, and how many sources did it serve?"""
+    """Can a live surface be read at all, and does it still produce this corpus?
+
+    UNDER A SALT THIS LEG INVENTS, deliberately. The committed evidence is
+    labelled with a keyed hash and the key is not in this repository, so a
+    re-derivation here cannot reproduce the committed labels and comparing the
+    files directly would report a difference that is not one. A throwaway salt
+    walks exactly the path a stranger walks, and `--verify` compares what is left
+    when the labels are set aside: the figures, the forms, the units, and which
+    filings share a registrant.
+
+    That makes this leg a stronger claim than the byte comparison it replaced. It
+    used to prove *this author can reproduce their own file*; it now proves
+    somebody with no access to the key can reproduce the corpus.
+    """
     if not quarter:
         return leg("live", INCOMPLETE, "NOT RUN: no --quarter given. The quarterly "
                                        "file is 128 MB and is not committed; "
@@ -240,31 +289,129 @@ def leg_live(quarter) -> int:
     if not pathlib.Path(quarter).exists():
         return leg("live", INCOMPLETE, f"NOT RUN: no such quarterly file: {quarter}")
     with tempfile.TemporaryDirectory() as work:
-        made = subprocess.run(
+        checked = subprocess.run(
             [sys.executable, str(HERE / "fetch_sec_quarter.py"), str(quarter),
-             "--out", work],
+             "--out", str(EVIDENCE), "--salt-file", str(pathlib.Path(work) / "salt"),
+             "--new-salt", "--verify"],
             capture_output=True, text=True, timeout=900)
-        if made.returncode != 0:
-            return leg("live", FINDINGS,
-                       f"the live surface would not read: "
-                       f"{(made.stderr or made.stdout).strip()[:120]}")
-        produced = {p.name: p for p in pathlib.Path(work).glob("*.json")}
-        # BY NAME, never by sort position. The first version took `produced[1]`
-        # of a sorted list and compared the re-derived DECLARATION against the
-        # committed CAPTURE, which differ for the obvious reason -- a red leg
-        # reporting stale evidence about evidence that was current.
-        if set(produced) != {CAPTURE.name, DECLARATION.name}:
-            return leg("live", FINDINGS, f"expected {CAPTURE.name} and "
-                                         f"{DECLARATION.name}, got {sorted(produced)}")
-        fresh = _load(produced[CAPTURE.name])
-        committed = _load(CAPTURE)
-        if fresh["filings"] != committed["filings"]:
-            return leg("live", FINDINGS, "the live surface no longer produces the "
-                                         "committed evidence; the evidence is stale "
-                                         "or the source moved")
-    return leg("live", CLEAN, f"read the quarter and reproduced the committed "
-                              f"evidence byte for byte, {len(committed['filings']):,} "
-                              f"reading(s)")
+        out = (checked.stdout + checked.stderr).strip()
+        if checked.returncode == 2:
+            return leg("live", INCOMPLETE, f"the live surface would not read: "
+                                           f"{out[:120]}")
+        if checked.returncode != 0:
+            return leg("live", FINDINGS, f"the live surface no longer produces the "
+                                         f"committed corpus; the evidence is stale "
+                                         f"or the source moved -- {out[:160]}")
+    return leg("live", CLEAN, "re-derived under a fresh salt and matched the "
+                              "committed corpus up to relabelling")
+
+
+# -------------------------------------------------------------------- names
+#: Does this repository name a filer beside that filer's own figures?
+#:
+#: THE EVIDENCE WAS ANONYMISED AND THIS WAS NOT. Four tests in
+#: `test_localisation.py` were named after the registrants they were about, beside
+#: those registrants' exact reported figures. Nothing about a function name looks
+#: like an identifier, so nothing that scrubbed identifiers went near it -- and a
+#: name written out is a stronger identification than any label the evidence ever
+#: carried, because it needs no join at all.
+#:
+#: THE PREDICATE IS CO-OCCURRENCE, and the first version of this leg got it wrong.
+#: Sweeping for filer names alone reported 67 hits over four real ones, because
+#: thousands of registrants are named after ordinary words. Filtering to
+#: non-dictionary words would have dropped three of the four, whose names are
+#: ordinary English. What is not ordinary is a filer's name in the same file as a
+#: figure only that filer reported, which is what makes it an identification
+#: rather than a coincidence.
+#:
+#: THIS COMMENT WAS ITSELF A HIT. Its first draft named the three companies and
+#: quoted one of their figures, to explain why the simpler predicate failed -- so
+#: the leg went red on the paragraph documenting the leg. Prose about an
+#: identification is an identification. It is described here and not quoted, and
+#: that is the second time this repository has learned the same thing about
+#: writing down what it just removed.
+#:
+#: Needs the quarter, so it cannot run in CI and says so rather than passing.
+GENERIC_IN_A_FILER_NAME = {
+    "GROUP", "HOLDINGS", "HOLDING", "TRUST", "CAPITAL", "PARTNERS", "INCOME",
+    "GLOBAL", "AMERICA", "AMERICAN", "NATIONAL", "UNITED", "FIRST", "SECOND",
+    "SERVICES", "SERVICE", "ENERGY", "FINANCIAL", "BANCORP", "BANCSHARES",
+    "INTERNATIONAL", "RESOURCES", "PROPERTIES", "PROPERTY", "SOLUTIONS", "FUND",
+    "SYSTEMS", "TECHNOLOGIES", "TECHNOLOGY", "PHARMACEUTICALS", "THERAPEUTICS",
+    "ACQUISITION", "CORPORATION", "COMPANY", "LIMITED", "INDUSTRIES", "MEDICAL",
+    "HEALTH", "ASSET", "ASSETS", "GENERAL", "STANDARD", "COMMUNITY", "SECURITY",
+    "DIGITAL", "MEDIA", "GROWTH", "VALUE", "SELECT", "MASTER", "COMMON", "CORP",
+    "PUBLIC", "PRIVATE", "INC", "PLC", "LTD", "THE", "AND", "FOR", "NEW",
+}
+
+#: Four digits, so a year or a small count is not a figure.
+#:
+#: And the figure must be one that exactly ONE filer reported, which is the
+#: property that makes this an identification at all. Without that the leg
+#: reported a company called Real beside the number 1000 -- both real, jointly
+#: meaningless, because a figure thousands of filers report identifies nobody.
+FIGURE = re.compile(r"(?<!\d)\d{4,}(?!\d)")
+
+
+def _filers_and_their_figures(quarter):
+    """Each filer's distinctive name words, and the values they reported."""
+    import csv as _csv
+    import io as _io
+    import zipfile as _zipfile
+    with _zipfile.ZipFile(quarter) as z:
+        with z.open("sub.txt") as fh:
+            of = {r["adsh"]: r["name"].upper() for r in _csv.DictReader(
+                _io.TextIOWrapper(fh, "utf-8", errors="replace"), delimiter="\t")}
+        figures = collections.defaultdict(set)
+        with z.open("num.txt") as fh:
+            for row in _csv.DictReader(
+                    _io.TextIOWrapper(fh, "utf-8", errors="replace"), delimiter="\t"):
+                if row["tag"] != ASSET_TAG and row["tag"] not in TOTAL_TAGS:
+                    continue
+                name = of.get(row["adsh"])
+                if name:
+                    figures[name].add(row["value"].split(".")[0].lstrip("-"))
+    # Keep only the figures a single filer reported. A shared figure is not a
+    # join key and a name beside one is a coincidence.
+    reporters = collections.Counter(v for values in figures.values() for v in values)
+    figures = {name: {v for v in values if reporters[v] == 1}
+               for name, values in figures.items()}
+    words = {name: {w for w in re.findall(r"[A-Z]{3,}", name)
+                    if w not in GENERIC_IN_A_FILER_NAME}
+             for name in figures}
+    return words, figures
+
+
+def leg_names(quarter) -> int:
+    """Is any filer named in this repository beside a figure that filer reported?"""
+    if not quarter or not pathlib.Path(quarter).exists():
+        return leg("names", INCOMPLETE, "NOT RUN: needs --quarter, and the 128 MB "
+                                        "source is not committed")
+    words, figures = _filers_and_their_figures(quarter)
+    shipped = {}
+    for path in sorted(ROOT.rglob("*")):
+        if (not path.is_file() or ".git" in path.parts
+                or path.suffix not in {".py", ".md", ".toml", ".yml", ".cfg"}
+                or path.name.startswith("2025q1")):
+            continue
+        text = path.read_text(errors="replace")
+        shipped[path.relative_to(ROOT).as_posix()] = (
+            set(re.findall(r"[A-Za-z]{3,}", text.upper())), set(FIGURE.findall(text)))
+    found = []
+    for name, mine in words.items():
+        if not mine:
+            continue
+        for where, (said, numbers) in shipped.items():
+            both = mine & said
+            shared = figures[name] & numbers
+            if both and shared:
+                found.append((where, sorted(both)[0], sorted(shared)[0]))
+    if not found:
+        return leg("names", CLEAN, f"no filer of {len(figures):,} is named in this "
+                                   f"repository beside a figure they reported")
+    return leg("names", FINDINGS,
+               f"{len(found)} place(s) name a filer beside that filer's own figure: "
+               + "; ".join(f"{w} ({tok} with {num})" for w, tok, num in found[:5]))
 
 
 # ------------------------------------------------------------- draft / gate
@@ -296,18 +443,21 @@ def leg_gate(drafted) -> int:
     return leg("gate", CLEAN, "the unsigned draft is refused by name and exits 2")
 
 
+
 # -------------------------------------------------------------------- clean
 def leg_clean(work) -> int:
     """Over an uncontaminated corpus, does the pipeline stay quiet?"""
     capture = copy.deepcopy(_load(CAPTURE))
+    unbalanced = unbalanced_ids(capture)
     before = len(capture["filings"])
-    capture["filings"] = [f for f in capture["filings"] if f["id"] not in UNBALANCED]
+    capture["filings"] = [f for f in capture["filings"] if f["id"] not in unbalanced]
     removed = before - len(capture["filings"])
-    if removed != len(UNBALANCED):
+    if removed != EXPECTED_UNBALANCED:
         return leg("clean", INCOMPLETE, f"could not build a clean corpus: removed "
-                                        f"{removed} of {len(UNBALANCED)} known "
-                                        f"unbalanced filings, so this leg would be "
-                                        f"testing a corpus nobody described")
+                                        f"{removed} where {EXPECTED_UNBALANCED} "
+                                        f"unbalanced filings were expected, so this "
+                                        f"leg would be testing a corpus nobody "
+                                        f"described")
     path = _write(pathlib.Path(work) / "clean-capture.json", capture)
     proc = cli(["detect", str(DECLARATION), path, "--json"])
     document, why = document_or_reason(proc)
@@ -318,7 +468,7 @@ def leg_clean(work) -> int:
                    f"a corpus with every known fault removed still reports "
                    f"{len(document['findings'])}: "
                    f"{[f['filing'] for f in document['findings']][:3]}")
-    return leg("clean", CLEAN, f"{len(UNBALANCED)} known faults removed and the "
+    return leg("clean", CLEAN, f"{removed} known faults removed and the "
                                f"remaining corpus is quiet")
 
 
@@ -355,13 +505,12 @@ FAULTS = {
 
 def _inject(name, capture):
     """Apply one fault to a copy, and return the filing it was applied to."""
+    unbalanced = unbalanced_ids(capture)
     victim = next(f for f in capture["filings"]
-                  if f["id"] not in UNBALANCED
+                  if f["id"] not in unbalanced
                   and "Assets" in f["readings"]
-                  and any(t in f["readings"] for t in
-                          ("LiabilitiesAndStockholdersEquity", "EquityAndLiabilities")))
-    total = next(t for t in ("LiabilitiesAndStockholdersEquity", "EquityAndLiabilities")
-                 if t in victim["readings"])
+                  and any(t in f["readings"] for t in TOTAL_TAGS))
+    total = next(t for t in TOTAL_TAGS if t in victim["readings"])
     if name == "one_unit_off":
         victim["readings"]["Assets"] = str(int(float(victim["readings"][total])) - 1)
         victim["readings"].setdefault("Liabilities", "0")
@@ -439,7 +588,7 @@ def leg_faults(work) -> int:
 def leg_attest() -> int:
     return leg("attest", INCOMPLETE,
                "NOT BUILT: this package has no attestation surface. The leg is "
-               "named rather than dropped so the table stays twelve long and the "
+               "named rather than dropped so the table keeps its full length and the "
                "gap is in the summary, not only in FINDINGS.md", built=False)
 
 
@@ -548,13 +697,13 @@ def leg_ship(work) -> int:
     if document is None:
         return leg("ship", FINDINGS, f"the installed console script printed no "
                                      f"document: {why}")
-    if proc.returncode != FINDINGS or len(document["findings"]) != len(UNBALANCED):
+    if proc.returncode != FINDINGS or len(document["findings"]) != EXPECTED_UNBALANCED:
         return leg("ship", FINDINGS,
                    f"the installed artifact exited {proc.returncode} with "
                    f"{len(document['findings'])} finding(s); the source tree "
-                   f"reports {len(UNBALANCED)} at exit 1")
+                   f"reports {EXPECTED_UNBALANCED} at exit 1")
     return leg("ship", CLEAN, f"the built wheel, installed clean, reports the same "
-                              f"{len(UNBALANCED)} filings at exit 1")
+                              f"{EXPECTED_UNBALANCED} filings at exit 1")
 
 
 def main(argv=None) -> int:
@@ -587,6 +736,8 @@ def main(argv=None) -> int:
             leg_conformance()
         if wanted("live"):
             leg_live(args.quarter)
+        if wanted("names"):
+            leg_names(args.quarter)
         if wanted("draft"):
             _, drafted = leg_draft(work)
         if wanted("gate"):

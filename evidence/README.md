@@ -33,24 +33,44 @@ open:
    honest answer, rather than *counted out*, which would be a reader's opinion
    wearing a vocabulary's clothes.
 
-## Real figures, pseudonymous filers
+## Real figures, anonymised filers
 
 Every figure here is as filed and the six discrepancies are real. The filers are
-not named: `id` and `cik` carry stable pseudonyms (`F-00001`, `R-0001`) assigned by
-sorted position, and `name` follows the registrant. The declaration records which
-form it is in an `identifiers` key.
+not named: `id` and `cik` carry `HMAC-SHA256(salt, domain + identifier)` truncated
+to twelve hex characters, and `name` follows the registrant. The declaration
+records the construction, and the salt's fingerprint, in an `identifier_scheme`
+key. The salt itself is not in this repository.
 
-**Pseudonymity, not anonymity.** The scheme is positional and the source is public,
-so anyone with the same quarterly file can recover the mapping by sorting it, and
-`../battery/fetch_sec_quarter.py --named` emits it directly. What is not published
-here is the mapping -- so this repository is not a searchable list of identified
-companies beside an arithmetic error, which is the only thing the pseudonyms buy
-and all they are claimed to buy.
+**The scheme was positional and is now keyed.** Labels used to be assigned by
+sorted position, and this file used to say -- accurately -- that the result was
+pseudonymity and not anonymity, because sorting the public quarter recovers that
+mapping. It is now keyed on a secret, so nothing published here inverts it.
 
-Positional rather than a salted digest ON PURPOSE: a digest would be genuinely
-irreversible and would also make the committed evidence impossible for a stranger
-to re-derive and compare byte for byte, which is a worse trade for evidence whose
-whole value is that somebody else can reproduce it.
+**A salt that shipped would not be a salt.** The quarter declares 6,231 filings
+and 5,672 registrants. Both are small enough to enumerate completely, so a
+committed salt lets anyone rebuild the whole mapping by hashing every candidate --
+an artefact that looks irreversible and is not, which is worse than the positional
+scheme, because that one said what it was.
+
+**Row order is part of the scheme.** Rows are emitted in label order. Sorting them
+by the real accession number and relabelling afterwards would leave row position
+equal to sorted-identifier position, which is the positional mapping again, in the
+one channel nobody inspects.
+
+**What it does not buy.** The figures are unchanged and the figures are a join
+key: 93% of the rows here carry a combination of values unique within the quarter,
+so a reader holding the same public file can match a row to a filer by its numbers
+alone. Closing the label channel does not close that one, and nothing that keeps
+the figures exact can. They are exact because a one-dollar discrepancy reported to
+a rounded number reports nothing.
+
+**Re-deriving it.** `../battery/fetch_sec_quarter.py` needs a salt; there is no
+default, because a default salt is a published salt. A stranger deriving this
+quarter gets the same corpus under different labels, so the files will not compare
+byte for byte and that is not a discrepancy. `--verify` is the comparison that
+holds: it checks the figures, the forms, the units and which filings share a
+registrant, and reports whether the two are the same corpus up to relabelling.
+`--named` still emits the real identifiers, from the source, for local use.
 
 Nothing here is an allegation. A balance sheet that does not balance by one dollar
 is a balance sheet that does not balance by one dollar, and what that means is not

@@ -1,19 +1,32 @@
 """The corpus is the fixture. Every assertion here is about 2025q1 as filed."""
 
+import collections
+
 from filing_balance_audit import exit_contract, feeder
 
 #: The filings in 2025q1 whose balance sheet does not balance, and by how much.
 #: Established by `docs/arbiter/tools/sec_identity_probe.py` reading the quarterly
 #: file directly -- a second reader, not this package -- and reproduced here
 #: through the whole pairing path.
+#:
+#: BY RESIDUAL, NOT BY NAME, and that is forced rather than stylistic. This used
+#: to name the six filings: `F-04814`, `F-03283` and four more. Those were
+#: positional labels, and the evidence is now labelled with a keyed hash under a
+#: salt this suite does not have -- so a test naming one asserts something only
+#: the holder of one salt can reproduce, and goes red for everybody else for a
+#: reason that is not a defect.
+#:
+#: What survives relabelling is the multiset: six filings, and these residuals.
+#: The claim is no weaker. Naming them pinned which rows, and this pins how many
+#: and by how much, which is what the second reader actually measured.
 UNBALANCED = {
-    "F-04814": "1000.0000",     # a filing of registrant R-4708   S-1/A
-    "F-04795": "1000.0000",     # a filing of registrant R-4708   S-1
-    "F-01901": "500.0000",      # a filing of registrant R-1046     10-Q
-    "F-05665": "-2.0000",       # 10-Q, all three readings differ
-    "F-03283": "-1.0000",       # 10-K, the components match the total
-    "F-03970": "1.0000",        # a filing of registrant R-4689       10-Q
+    "1000.0000": 2,     # one registrant's S-1 and its S-1/A, the same fault twice
+    "500.0000": 1,      # a 10-Q, and no components tagged to localise it
+    "1.0000": 1,        # a 10-Q whose components sum to assets
+    "-1.0000": 1,       # a 10-K whose components match the total
+    "-2.0000": 1,       # a 10-Q, all three readings differ
 }
+HOW_MANY = sum(UNBALANCED.values())
 
 
 def _fired(run):
@@ -25,13 +38,21 @@ def _fired(run):
 
 def test_the_six_real_faults_are_found_and_no_others(real_run):
     fired = _fired(real_run)
-    assert {e.split("::")[0] for e in fired} == set(UNBALANCED)
+    assert len({e.split("::")[0] for e in fired}) == HOW_MANY == 6
 
 
 def test_each_residual_is_the_amount_the_second_reader_measured(real_run):
-    by_filing = {r.name: r for r in real_run.fed.resolved}
-    for adsh, expected in UNBALANCED.items():
-        assert str(by_filing[adsh].residuals()["assets_vs_total"]) == expected
+    """The residuals of the filings that fired, as a multiset.
+
+    Read off the run rather than looked up by name, so the assertion holds under
+    any relabelling of the evidence -- including a reader's own, derived from the
+    same quarter under a salt nobody here has.
+    """
+    fired = {e.split("::")[0] for e in _fired(real_run)}
+    measured = collections.Counter(
+        str(r.residuals()["assets_vs_total"])
+        for r in real_run.fed.resolved if r.name in fired)
+    assert measured == collections.Counter(UNBALANCED)
 
 
 def test_the_whole_quarter_is_accounted_for(real_period, real_run):

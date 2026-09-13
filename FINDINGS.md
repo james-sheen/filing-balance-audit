@@ -98,7 +98,7 @@ in a finding beside the count rather than in it.
 **What fit, which is most of it, and is worth saying.** `Capture.errors` takes
 the values that would not parse exactly. `CapturedPoint.units` is the reporting
 currency with nothing bent to fit. `peer_groups` pairs an amendment with its
-original -- `a filing of registrant R-4708` filed an S-1 and an S-1/A in one quarter, both
+original -- one registrant filed an S-1 and an S-1/A in one quarter, both
 carrying the same thousand-dollar discrepancy, which is how the fault is shown to
 be in the statement rather than in one transcription of it. The one member this
 domain could not answer honestly is the one above.
@@ -345,6 +345,88 @@ quarter's worth of filings declines CONSISTENCY far more often than that on the
 components arm. It is a warning and not an error, and it floods stderr. Noted
 rather than worked around: the engine is right that the rate is unusual, and a
 bridge feeding a whole quarter is an unusual consumer.
+
+## 15. Hashing the labels would have changed nothing, because the rows were sorted
+
+The evidence shipped with positional labels: sort the quarter's accession numbers,
+number them. That was disclosed as pseudonymity and not anonymity, which was
+accurate, and then it was replaced with a keyed hash so the mapping could not be
+recovered at all.
+
+The replacement was very nearly cosmetic. Both files emitted their rows in order
+of the REAL identifier -- `sorted(subs.items())` on the declaration, `sorted(readings.items())`
+on the capture -- because that was the natural way to write it and nothing about
+labelling had ever depended on it. Relabelling under a secret salt while leaving
+that alone publishes the positional mapping anyway: row 1 is the first filing in
+sorted order, row 2 the second, for all 6,231. The identifiers would have looked
+irreversible and the file would have carried the same information in its shape.
+
+Emitting by label fixes it, and the fix is one `key=` argument. What is worth
+recording is that the defect lives in a line that has nothing to do with the
+feature: a reviewer reading the hashing code sees a correct HMAC under a good
+salt, and the leak is two functions away in an argument nobody would think to
+question. **A privacy change is not confined to the code that does the privacy.**
+
+Measured after the change: the correlation between a row's new position and its
+old positional index is -0.015, and 992 of the first 2,000 adjacent pairs descend.
+Before it, both numbers would have been the maximum. `test_rows_are_ordered_by_label`
+is the guard, and it is the assertion in that file most likely to be undone by
+somebody tidying a sort key.
+
+## 16. The labels were never the way to identify these filings
+
+93.07% of the rows in this evidence -- 5,805 of 6,237 -- carry a combination of
+reported values that is unique within the quarter. The source is public. So a
+reader who wants to know who filed a row joins on the figures and never looks at
+the identifier at all, whatever it says.
+
+This was measured by accident, checking something else: joining the pre-hash and
+post-hash evidence to confirm the ordering fix had worked. The join was written on
+the figures because that was the only key the two files still shared, and it
+matched 5,805 rows across two independently-labelled derivations. The check
+answered its own question and incidentally measured the thing the labels were
+supposed to be protecting.
+
+It does not make the hashing pointless. Not publishing a list of named companies
+beside their arithmetic errors is a real difference from publishing one, and that
+is the whole claim. But it bounds what the claim can be, and the bound belongs in
+`NOTICE` rather than in a findings file, which is where it now is: **the filers
+cannot be recovered from what is published here, and that is not the same as their
+being unidentifiable.** The only way to close the second channel is to stop
+reporting the figures exactly, and the figures reported exactly are the package.
+
+## 17. The evidence was anonymised and the test names were not
+
+Four tests in `test_localisation.py` were named after the registrants they were
+about: the company name in the function name, that company's exact reported
+figures three lines below, in a test asserting their balance sheet does not
+balance. They had been there since the first commit.
+
+Anonymising the evidence did not touch them and was never going to. Everything in
+that change -- the hashing, the salt, the row ordering, the notice -- is about
+`id` and `cik`, because those are the fields that look like identifiers. A
+function name does not look like an identifier. It looks like a name the author
+chose, which is exactly what it was.
+
+It is also a stronger identification than anything the labels ever leaked. The
+label channel required holding the 128 MB source and sorting it; this one required
+reading the file. The repository spent a change closing the harder channel while
+the easier one sat in a test suite, and the only reason it surfaced is that the
+renamed functions were being read for an unrelated reason.
+
+**The leg that now checks it got its predicate wrong twice.** Sweeping for filer
+names alone reported 67 hits over the four, because thousands of registrants are
+named after ordinary words; filtering to non-dictionary words would have dropped
+three of the four, whose names are ordinary English. What identifies is a filer's
+name in the same file as a figure only that filer reported -- and with that
+predicate, over 5,667 filers, the tree is clean and a single reintroduced name is
+found by name and file.
+
+**And the comment explaining all this was itself a hit.** Its first draft named
+three of the companies and quoted one of their figures, to say why the simpler
+predicate failed, so the leg went red on the paragraph documenting the leg. The
+same lesson as entry 2 in a different costume: prose about a thing is made of the
+thing. Describe the retired name, never quote it.
 
 ## What is not claimed
 

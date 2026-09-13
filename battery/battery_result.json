@@ -15,7 +15,13 @@
   {
    "leg": "live",
    "code": 0,
-   "note": "read the quarter and reproduced the committed evidence byte for byte, 6,237 reading(s)",
+   "note": "re-derived under a fresh salt and matched the committed corpus up to relabelling",
+   "built": true
+  },
+  {
+   "leg": "names",
+   "code": 0,
+   "note": "no filer of 5,667 is named in this repository beside a figure they reported",
    "built": true
   },
   {
@@ -69,7 +75,7 @@
   {
    "leg": "suite",
    "code": 0,
-   "note": "from a directory that is not the repository: 88 passed in 5.02s",
+   "note": "from a directory that is not the repository: 169 passed in 4.88s",
    "built": true
   },
   {

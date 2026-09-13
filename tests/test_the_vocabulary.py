@@ -75,7 +75,7 @@ def test_nothing_is_counted_out_by_type_and_that_is_measured():
 
 def test_an_accession_number_is_never_read_as_a_template():
     """A guessed pattern wildcards an identifier into a match-anything."""
-    for name in ("F-03283", "{cik}-25-{seq}", ""):
+    for name in ("F-9a3c1f77b0d2", "{cik}-25-{seq}", ""):
         assert VOCABULARY.template_pattern(name) is None
 
 
@@ -113,14 +113,23 @@ def test_a_filing_reporting_only_in_another_currency_is_not_the_same_point():
     assert VOCABULARY.same_point(Point(), Point("CNY"))
 
 
-def test_peer_groups_pairs_an_amendment_with_its_original(real_period):
-    """Registrant `R-4708` filed an S-1 and an S-1/A in 2025q1, both carrying the same
+def test_peer_groups_pairs_an_amendment_with_its_original(real_period, real_run):
+    """One registrant filed an S-1 and an S-1/A in 2025q1, both carrying the same
     thousand-dollar discrepancy -- which is how the fault is shown to be in the
-    statement rather than in one transcription of it."""
+    statement rather than in one transcription of it.
+
+    The pair is found BY ITS RESIDUAL and not by name. It used to be named, with
+    the two positional labels; the evidence is now keyed on a salt this suite
+    does not hold, so the only durable way to say *those two* is the thing that
+    makes them interesting -- they are the two filings a thousand out.
+    """
     groups = VOCABULARY.peer_groups(real_period)
     assert groups, "no peer group was found in a real quarter"
-    members = {m for g in groups for m in g["members"]}
-    assert {"F-04795", "F-04814"} <= members
+    thousand = {r.name for r in real_run.fed.resolved
+                if str(r.residuals().get("assets_vs_total")) == "1000.0000"}
+    assert len(thousand) == 2, "the S-1 and its amendment"
+    assert any(thousand <= set(g["members"]) for g in groups), \
+        "the two are one registrant's, so a peer group has to contain both"
     assert all(len(g["members"]) > 1 for g in groups)
 
 

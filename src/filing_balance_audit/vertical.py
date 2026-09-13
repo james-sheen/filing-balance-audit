@@ -196,7 +196,7 @@ class FilingVocabulary:
 
         An amendment and its original. One registrant filing an S-1 and then an
         S-1/A for the same period has filed the same balance sheet twice, and
-        the two should agree -- `a filing of registrant R-4708` filed both in 2025q1 and both
+        the two should agree -- one registrant filed both in 2025q1 and both
         carry the same thousand-dollar discrepancy, which is how you can tell the
         fault is in the statement rather than in one transcription of it.
 

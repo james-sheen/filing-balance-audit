@@ -38,7 +38,7 @@ is an audit opinion, accounting advice or investment advice. A discrepancy it
 reports is an arithmetic fact about what was filed; what that fact means is not a
 question this software answers.
 
-THIRD-PARTY CONTENT: REAL FIGURES, PSEUDONYMOUS FILERS
+THIRD-PARTY CONTENT: REAL FIGURES, ANONYMISED FILERS
 
 The files under `evidence/` are DERIVED from the SEC's Financial Statement Data
 Sets, which are United States Government work and carry no copyright. The
@@ -47,22 +47,39 @@ redistributed here.
 
 Every figure in that evidence is as filed, and the discrepancies reported are real
 discrepancies in real published balance sheets. Six of them do not balance. The
-FILERS are not named: accession numbers and registrants carry stable pseudonyms,
-because publishing a list of identified companies beside an arithmetic error is not
-something this package needs to do to make its point. The arithmetic is the
-subject, and who filed it changes no test here.
+FILERS are not named: accession numbers and registrants carry labels computed as
+HMAC-SHA256 of the identifier under a salt that is not published and is not in
+this repository. Publishing a list of identified companies beside an arithmetic
+error is not something this package needs to do to make its point. The arithmetic
+is the subject, and who filed it changes no test here.
 
-THAT IS PSEUDONYMITY AND NOT ANONYMITY, and it is not offered as any. The source is
-public and the scheme is positional, so anyone holding the same quarterly file can
-recover the mapping by sorting it, and `--named` emits it directly. What is not
-published here is the mapping.
+The labels were briefly positional, assigned by sorted position. This notice then
+described them as pseudonymity and not anonymity, which was accurate: anyone
+holding the same public quarter could recover that mapping by sorting it. The
+labels are now keyed, and no mapping can be recovered from anything published
+here.
+
+WHAT THAT DOES NOT BUY, AND IT IS THE PART WORTH READING. The figures are
+unchanged, and the figures are a join key. 93% of the rows in this evidence carry
+a combination of reported values unique within the quarter, so a reader holding
+the same public file can match a row to a filer by its numbers alone, without
+touching the labels. Anonymising the identifiers closes one channel and does not
+close that one, and no scheme that leaves the figures exact can. They are left
+exact because a discrepancy of one dollar, reported to a rounded number, is not a
+report of anything.
+
+So both of these are true: the filers are not named here and cannot be recovered
+from what is published here, and this is not a claim that they are unidentifiable
+to a determined reader who holds the source. The second is why the first is not
+offered as a guarantee.
 
 Nothing in that evidence is an allegation. A balance sheet that does not balance by
 one dollar is a balance sheet that does not balance by one dollar, and what that
 means is not a question this software answers.
 
 Anyone re-deriving the evidence is making requests to sec.gov and is subject to its
-fair-access policy, which requires a declared User-Agent naming a contact. See
+fair-access policy, which requires a declared User-Agent naming a contact. They
+will also derive different labels, under their own salt, over the same corpus. See
 `evidence/README.md`.
 
 DEPENDENCIES, SEPARATELY LICENSED

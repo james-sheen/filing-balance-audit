@@ -19,12 +19,32 @@ First build. Local and unpublished: no repository, not on PyPI.
   a different distribution would be refused for the right reason with a confusing
   message. `FilingVocabulary` and the `Filing` records never moved: they name the
   subject, which was a filing throughout.
-- **The evidence ships pseudonymous.** Every figure is as filed and the six
-  discrepancies are real; the filers are not named. `id` and `cik` carry stable
-  positional pseudonyms and `battery/fetch_sec_quarter.py --named` emits the real
-  form for local use. Pseudonymity and not anonymity, said plainly in `NOTICE`:
-  the source is public and the scheme is positional, so the mapping is
-  recoverable. What this repository does not publish is the mapping.
+- **The evidence ships anonymised.** Every figure is as filed and the six
+  discrepancies are real; the filers are not named. `id` and `cik` carry
+  `HMAC-SHA256(salt, domain + identifier)` under a salt that is not committed and
+  has no default, so the mapping cannot be recovered from anything published here.
+  `battery/fetch_sec_quarter.py --named` still emits the real form, from the
+  source, for local use.
+
+  The labels were briefly positional. That was disclosed as pseudonymity and not
+  anonymity, which was accurate, and replacing it turned up two things worth the
+  entry. Rows were emitted in order of the real accession number, so relabelling
+  alone would have republished the positional mapping in the row order; they are
+  now emitted by label. And the figures are themselves a join key on 93% of rows,
+  which no labelling scheme touches -- stated in `NOTICE`, because an artefact
+  claiming more privacy than it has is worse than one claiming less.
+
+  The cost is byte-for-byte reproducibility: a stranger derives the same corpus
+  under different labels. `--verify` replaces the byte comparison with an
+  up-to-relabelling one over the figures, forms, units and registrant groupings,
+  and the battery's `live` leg now runs it under a salt it invents -- proving a
+  reader without the key can reproduce the corpus, which the old byte comparison
+  never claimed.
+- **Four tests were named after the filers they were about**, beside those
+  filers' exact figures, since the first commit. Anonymising the evidence did not
+  touch them: a function name does not look like an identifier. Renamed, and the
+  battery grew a `names` leg that reports any filer named in this tree beside a
+  figure only that filer reported.
 - **No hardcoded path to the engine.** `ARBITER_ENGINE` names a checkout; unset
   means not installed and not told where, and the legs that need it say so.
 - **Affiliation disclaimer**, in `README.md` above the fold and in full in

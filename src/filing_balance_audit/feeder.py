@@ -18,9 +18,14 @@ which fired is the localisation:
     assets disagrees with the total, parts agrees with assets  -> the TOTAL is odd
     assets disagrees with the total, parts disagrees with assets -> ASSETS is odd
 
-Both shapes are in the real corpus. `a filing of registrant R-4689` files parts that sum to its
-assets and a total one dollar below both; `a filing of registrant R-1367` files parts that
-sum to its total and assets one dollar below. One arm cannot tell them apart.
+Both shapes are in the real corpus. One 10-Q files parts that sum to its assets
+and a total one dollar below both; one 10-K files parts that sum to its total and
+assets one dollar below. One arm cannot tell them apart.
+
+Described and not named, here and below. The evidence is labelled with a keyed
+hash under a salt that is not published, so a label in a docstring names a filing
+only for whoever holds that one salt -- and reads like a durable reference to
+everybody else.
 
 THE SECOND ROUTE IS NOT ALWAYS A ROUTE, AND THAT WAS FOUND BY RUNNING IT. The
 first version of this fed the parts sum whenever the tags were present. Against
@@ -335,7 +340,7 @@ def localise(kinds: Sequence[str], resolved: Resolved,
 
     The third answer is not a hedge. A filing whose three readings all differ
     has no majority and naming one would be a guess printed as a result --
-    `a filing of registrant R-2594` files 35,126 / 35,128 / 35,129 and nothing in the
+    one 10-Q in the corpus files 35,126 / 35,128 / 35,129 and nothing in the
     filing says which was meant.
     """
     if ASSETS_ARM not in kinds:
