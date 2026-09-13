@@ -57,8 +57,8 @@ labels under an unpublished salt closed the label channel and closed nothing els
 The figures are a join key on 93% of rows, so a reader with the public quarter
 matched rows to filers without consulting a label either way. Worse, the previous
 labelling stayed in the repository's history, and with both labellings published
-the figures join them: 92.6% of hashed labels mapped back to their positional ones
-using nothing but a clone. A published repository cannot be anonymised at its tip.
+the figures join them: 5,774 of 6,198 filing labels, 93%, mapped back to their
+positional ones using nothing but a clone. A published repository cannot be anonymised at its tip.
 What the digest did cost was reproducibility -- a stranger's derivation no longer
 matched byte for byte, which is the one property this file leads with.
 

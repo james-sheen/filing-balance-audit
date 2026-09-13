@@ -400,8 +400,15 @@ across two independently-labelled derivations.
 **And then history published both labellings.** The first commit stays in the
 repository. With the positional evidence in one commit and the keyed evidence in
 another, the figures join them -- and from an anonymous clone, with no salt and no
-source archive, **5,774 of 6,237 rows (92.58%) and 5,534 of 5,672 registrants**
-mapped straight back. A positional label is its own sorted position, so the chain
+source archive, **5,805 of 6,237 rows (93.07%), 5,774 of 6,198 distinct filing
+labels (93.16%), and 5,534 of 5,672 registrants** mapped straight back.
+
+The three numbers are three populations and the first version of this entry mixed
+two of them, reporting the label count over the row denominator and calling the
+result 92.58%. A filing reporting in two currencies is two rows and one label, so
+the denominators differ by 39 and neither figure was wrong -- only the sentence
+joining them was. It understated the exposure, which is the direction that gets
+noticed last. A positional label is its own sorted position, so the chain
 completes with the same public file it always needed. The salt protected nothing
 from anyone who could `git clone`.
 

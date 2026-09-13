@@ -76,7 +76,7 @@ TAGS = (ASSET_TAG, *TOTAL_TAGS, *{t for group in PART_GROUPS for t in group})
 #: THE DIGEST WAS BUILT AND REVERTED, and the measurement is the reason rather
 #: than this paragraph. It bought nothing: the figures identify 93% of rows on
 #: their own, and once both labellings were published the figures joined them, so
-#: 92.6% of the keyed labels mapped back to positional ones from a clone alone. It
+#: 93% of the keyed labels mapped back to positional ones from a clone alone. It
 #: cost the byte-for-byte property above. See FINDINGS.md.
 def pseudonyms(adshs, ciks) -> tuple[dict[str, str], dict[str, str]]:
     """Stable pseudonyms for the two identifiers, by sorted position.
