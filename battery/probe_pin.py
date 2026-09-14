@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Install every release this package's pins claim, and run the suite on each.
 
-A version range is a claim about every release inside it. `arbiter-engine>=0.1.13,<0.2`
-says this package works on 0.1.13 and on everything released under 0.2 after it. No
+A version range is a claim about every release inside it: `>=LOW,<HIGH` says this
+package works on LOW and on everything released under HIGH after it. No
 suite can check that, because a suite runs against the one release the resolver picked
 -- by default the newest, which is the release the claim is least likely to be wrong
 about. The floor is the interesting end and it is the end nothing exercises.
@@ -104,8 +104,8 @@ def exercise(dist: str, version: str, home: pathlib.Path) -> tuple[bool, str]:
     #
     # The obvious order -- ask pip for the release and the package together --
     # is IMPOSSIBLE below the floor of a REQUIRED dependency, and pip says so:
-    # this package declares `presence-audit>=0.1.7`, so asking for 0.1.6 beside
-    # it is a ResolutionImpossible. That is pip being right, and it is also the
+    # a package that declares a REQUIRED dependency at `>=LOW` and is then asked
+    # for the release below LOW beside it gets a ResolutionImpossible. That is pip being right, and it is also the
     # probe being asked the wrong question. The point of a below-floor leg is to
     # violate the declared floor deliberately and see what breaks, which needs
     # the resolver told to stand down rather than consulted.
