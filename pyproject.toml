@@ -50,7 +50,15 @@ dependencies = ["presence-audit>=0.1.7,<0.2"]
 # 0.1.13 was the declared floor before the probe existed, and it came from a
 # design note: it was the release this was built against. Nothing had been run
 # below it.
-engine = ["arbiter-engine>=0.1.12,<0.2"]
+#
+# THE CEILING MOVED TO 0.2 ON A MEASUREMENT, 2026-09-24. `<0.2` had held since
+# the engine's 0.1 line and was never re-derived against a 0.2 release, so it
+# was a claim about a boundary nobody had crossed. Measured on 0.2.4: 168 passed, the same figure as 0.1.18.
+# The floor is raised with it rather than left low: a range is a claim about
+# every release inside it, and the releases between the old floor and this one were not
+# re-run when the ceiling moved. The tolerance reasoning above is why 0.1.11
+# is refused and is unaffected.
+engine = ["arbiter-engine>=0.2.4,<0.3"]
 
 [project.scripts]
 filing-balance-audit = "filing_balance_audit.cli:main"
