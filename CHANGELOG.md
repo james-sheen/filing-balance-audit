@@ -61,9 +61,11 @@ First build. Local and unpublished: no repository, not on PyPI.
 - `battery/probe_pin.py` measures both floors. `arbiter-engine` is 0.1.12, one
   release below the number this was built against: on 0.1.11 an agreement block
   with no tolerance is answered from a 5% relative fallback instead of declined,
-  which would report every fault in this corpus as agreement. `presence-audit`
-  stays at 0.1.7, which this suite cannot demonstrate and a sibling's can -- 0.1.6
-  fails the consulting vertical on behaviour this package does not exercise.
+  which would report every fault in this corpus as agreement. `presence-audit` is
+  `>=0.1.13,<0.3`: 0.1.13 is the first release whose findings take `point`, which
+  this package writes, and 0.1.12 fails the suite; 0.2.0, which removes the old
+  names, was run against before the ceiling admitted it. The floor was 0.1.7 until
+  then, a release this suite could not demonstrate.
 - Registered as a `presence-audit` vertical: all twelve required vocabulary
   members and all three optional ones, with the core's conformance kit as a
   battery leg. The `presence` verb is the core's three-valued answer, and its

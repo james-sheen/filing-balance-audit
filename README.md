@@ -203,11 +203,11 @@ Both floors are probed. `arbiter-engine>=0.1.12` is measured: the suite fails on
 relative fallback rather than declined. The declared floor before the probe
 existed was 0.1.13, a design note rather than a measurement.
 
-`presence-audit>=0.1.7` is a floor this suite cannot reach -- 0.1.6 passes here --
-and it stays, because the consulting vertical in this family measured 0.1.6
-failing on exit-contract behaviour this package does not exercise. A floor from
-somebody else's measurement is still a floor; a floor from this one would have been
-lower and wrong.
+`presence-audit>=0.1.13,<0.3` is measured here too: 0.1.13 is the first release whose
+findings take `point`, which this package writes, and 0.1.12 fails the suite. Until
+0.1.13 the floor was 0.1.7, a release this suite could not reach -- 0.1.6 passed here
+-- kept because the consulting vertical in this family measured 0.1.6 failing. 0.2.0,
+which removes the old names, was run against before the ceiling admitted it.
 
 `FINDINGS.md` records what did not survive building this. The worst of them
 invalidated three complete measurements before anything noticed, and took three

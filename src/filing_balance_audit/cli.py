@@ -112,7 +112,7 @@ def cmd_presence(args: argparse.Namespace) -> int:
             "format": formats.PRESENCE,
             "period": period.period,
             "counts": dict(counts),
-            "findings": [{"kind": f.kind, "filing": f.sensor, "detail": f.detail}
+            "findings": [{"kind": f.kind, "filing": f.point, "detail": f.detail}
                          for f in findings],
             # The text path prints an OUTCOME line and the first version of this
             # document did not carry one, so one verb reported its verdict in
@@ -129,7 +129,7 @@ def cmd_presence(args: argparse.Namespace) -> int:
     for key, value in counts.items():
         print(f"  {key:<26} {value:>7,}")
     for finding in findings[:20]:
-        print(f"  [{finding.kind}] {finding.sensor} -- {finding.detail}")
+        print(f"  [{finding.kind}] {finding.point} -- {finding.detail}")
     if len(findings) > 20:
         print(f"  ... and {len(findings) - 20:,} more")
     code = exit_contract.FINDINGS if findings else exit_contract.CLEAN

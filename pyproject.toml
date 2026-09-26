@@ -21,17 +21,16 @@ keywords = ["sec", "xbrl", "balance-sheet", "audit", "arbiter"]
 # `tests/test_stage_one_is_dependency_free.py` asserts by making the engine
 # unimportable and running the whole pairing path.
 #
-# THE FLOOR IS HIGHER THAN THIS SUITE CAN DEMONSTRATE, AND IT STAYS.
-# `battery/probe_pin.py --sweep` reports 0.1.7 and 0.1.6 both passing and 0.1.5
-# failing, so nothing here measured 0.1.7. It is kept anyway, for a measurement
-# somebody else took: the consulting vertical in this family probed the same range
-# and 0.1.6 fails its suite, on exit-contract behaviour this package does not
-# exercise. Lowering to what this oracle reaches would claim support for a release
-# a sibling has already measured broken.
+# THE FLOOR IS 0.1.13, AND THIS SUITE NOW MEASURES IT. That release's `Finding`
+# takes `point=`, which this package writes into it; on 0.1.12 the keyword does
+# not exist and the suite fails. Until 2026-09-26 the floor was 0.1.7, a release
+# this suite could not demonstrate -- 0.1.6 passed here -- and it was kept for a
+# sibling's measurement. The new floor is this repository's own.
 #
-# That is a floor from a specification rather than from a guess, which is what the
-# method asks for -- it is just not a specification this repository produced.
-dependencies = ["presence-audit>=0.1.7,<0.2"]
+# THE CEILING IS 0.3: 0.2.0 removes the old names this package no longer writes,
+# and the suite was run against a 0.2.0 build as well as 0.1.13 before the range
+# admitted it.
+dependencies = ["presence-audit>=0.1.13,<0.3"]
 
 [project.optional-dependencies]
 # MEASURED FLOOR, and it is one release lower than the number this package was

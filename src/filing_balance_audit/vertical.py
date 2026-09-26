@@ -169,7 +169,7 @@ class FilingVocabulary:
         out = []
         for name, tag, raw in getattr(capture, "errors", ()):
             out.append(Finding(
-                kind="unreadable_value", sensor=name,
+                kind="unreadable_value", point=name,
                 detail=f"{tag} was filed as {raw!r}, which is not a number. The "
                        f"engine never receives it, so no axiom can decline it "
                        f"either -- it is absent from both answers unless this "
@@ -183,7 +183,7 @@ class FilingVocabulary:
                                and any(t in r.values for t in _TOTALS))]
             if partial and len(partial) < len(readings):
                 out.append(Finding(
-                    kind="partial_second_currency", sensor=point.name,
+                    kind="partial_second_currency", point=point.name,
                     detail=f"reports in {point.units} and only some of those "
                            f"carry both sides: {', '.join(sorted(partial))} is "
                            f"incomplete. The filing is checked on the currency "

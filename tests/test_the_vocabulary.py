@@ -171,7 +171,7 @@ def test_a_partial_second_currency_is_reported_where_one_exists():
     findings = [f for f in VOCABULARY.capture_findings(read)
                 if f.kind == "partial_second_currency"]
     assert len(findings) == 1
-    assert findings[0].sensor == "F-1"
+    assert findings[0].point == "F-1"
     assert "CNY" in findings[0].detail
 
 
