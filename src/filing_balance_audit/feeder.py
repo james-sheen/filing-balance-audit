@@ -301,6 +301,18 @@ def run(period: Any, capture: Any) -> Run:
     except Exception as problem:                             # noqa: BLE001
         raise FeedError(f"the engine would not load this model: {problem}") from problem
 
+    # NOTHING CHECKABLE IS NOT A CLEAN RUN. With no declared filing resolved, the
+    # engine was handed a session with no entity, answered an unavailable envelope,
+    # and `code_for` -- findings or clean -- printed *every filing that could be
+    # checked, balanced* over none. After the model loads, so a model nobody could
+    # read is still reported as that.
+    if not fed.resolved:
+        raise FeedError(
+            f"no declared filing could be checked -- {len(fed.no_reading):,} with "
+            f"no reading, {len(fed.incomplete):,} missing a side, "
+            f"{len(fed.excluded):,} excluded -- so the engine would judge nothing "
+            f"and a clean run would assert nothing")
+
     residuals = {}
     for resolved in fed.resolved:
         properties: dict[str, float] = {
@@ -320,6 +332,13 @@ def run(period: Any, capture: Any) -> Run:
         residuals[entity_id(resolved)] = resolved.residuals()
 
     envelope = check(session).to_dict()
+    # The family's backstop: an unavailable envelope carries no measurement at
+    # all, whatever produced it. `factory-line-audit` refuses on the same key.
+    meta = envelope.get("meta") or {}
+    if meta.get("source") == "unavailable":
+        raise FeedError(f"the engine answered with an unavailable envelope, so "
+                        f"nothing in it is a measurement: "
+                        f"{meta.get('reason') or 'no reason given'}")
     return Run(envelope=envelope, fed=fed, residuals=residuals)
 
 

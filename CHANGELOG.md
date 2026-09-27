@@ -75,3 +75,9 @@ First build. Local and unpublished: no repository, not on PyPI.
   for a point that exists in more than one reporting unit. Filed upstream as
   `presence-audit` #13, with a reproduction showing the verdict changes with input
   order and a prototype that leaves that core's suite unchanged.
+- **A document that holds or names nothing is refused, as 2.** A capture of no
+  filings made `presence` raise out of the shared core and `detect` report every
+  filing that could be checked as balanced when none could; a declaration naming
+  no filing ran both the same way; and a filing with no id, or an entry that is not
+  a mapping, in either document exited 1 on a traceback. Each is refused by
+  position where it has one, and `detect` refuses a run with nothing to check.

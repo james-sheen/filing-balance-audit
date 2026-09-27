@@ -117,7 +117,10 @@ thousand.
 
 `2` is not a worse `1`. A run that could not read its declaration or reach the
 engine has produced no verdict, and reporting that as *no findings* is the failure
-the contract exists to prevent.
+the contract exists to prevent. So is a run handed a document that holds or names
+nothing -- a capture of no filings, a declaration naming none, an entry with no id
+-- and a run with nothing to check: *every filing that could be checked, balanced*
+is not true of none.
 
 ## Install
 

@@ -160,8 +160,25 @@ def load(payload: Mapping[str, Any]) -> Period:
             f"reporting units, and 0 is the usual and legitimate answer")
 
     period = str(payload.get("period") or "(unnamed period)")
+    listed = payload.get("filings")
+    if listed is not None and not isinstance(listed, list):
+        raise DeclarationError(f"`filings` is {type(listed).__name__}; a "
+                               f"declaration lists its filings")
     points = []
-    for entry in payload.get("filings") or ():
+    for index, entry in enumerate(listed or ()):
+        # BY POSITION, because a filing with no id has nothing else to be called.
+        # This read `entry["id"]` and raised KeyError -- and an entry that is not
+        # a mapping raised AttributeError -- each exiting 1, which this package's
+        # contract reads as a filing that did not balance.
+        if not isinstance(entry, Mapping):
+            raise DeclarationError(
+                f"filings[{index}] is {type(entry).__name__}, not a declared "
+                f"filing; each has to be a mapping carrying an id")
+        if entry.get("id") is None or not str(entry["id"]).strip():
+            raise DeclarationError(
+                f"filings[{index}] has no id, so no captured filing can be paired "
+                f"with it -- and dropping it would narrow the denominator without "
+                f"saying so")
         declared_type = entry.get("declared_type")
         if declared_type not in formats.DECLARED_TYPES:
             raise DeclarationError(

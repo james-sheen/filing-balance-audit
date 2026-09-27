@@ -5,8 +5,8 @@
     2  the run could not be completed
 
 TWO IS NOT A WORSE ONE. A run that could not read its declaration, could not
-import the engine, or was handed a capture in a format it does not read has
-produced no verdict at all, and reporting that as *no findings* is the failure
+import the engine, was handed a capture in a format it does not read, or was
+handed a document holding or naming nothing has produced no verdict at all, and reporting that as *no findings* is the failure
 this contract exists to prevent. A reader who sees 0 is entitled to believe
 somebody checked.
 

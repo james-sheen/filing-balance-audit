@@ -99,6 +99,9 @@ def cmd_presence(args: argparse.Namespace) -> int:
         return _refuse(str(problem))
     if not period.reviewed:
         return _refuse("this declaration is not signed, so nothing acts on it")
+    if not period.points:
+        return _refuse("this declaration names no filing, so a run against it "
+                       "would judge nothing and could only come back clean")
     try:
         from presence_audit import diff
     except ImportError:
@@ -146,6 +149,9 @@ def cmd_detect(args: argparse.Namespace) -> int:
         return _refuse(str(problem))
     if not period.reviewed:
         return _refuse("this declaration is not signed, so nothing acts on it")
+    if not period.points:
+        return _refuse("this declaration names no filing, so a run against it "
+                       "would judge nothing and could only come back clean")
     try:
         run = feeder.run(period, captured)
     except ImportError:

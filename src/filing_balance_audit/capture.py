@@ -150,12 +150,33 @@ def load(payload: Mapping[str, Any]) -> Capture:
     can read. Those are different facts and only one of them is about the filer.
     """
     formats.require(payload, formats.CAPTURE)
+    filings = payload.get("filings")
+    if filings is not None and not isinstance(filings, list):
+        raise CaptureError(f"`filings` is {type(filings).__name__}; a capture "
+                           f"lists its filings")
+    # A CAPTURE OF NOTHING IS REFUSED HERE, where it is still a fact about the
+    # capture. Read on, it reached the shared core as a walk that was not complete
+    # and recorded no failure -- `complete` is `bool(readings)` -- and the core
+    # indexed the first failure and raised; `detect` fed the engine nothing and
+    # scored it clean.
+    if not filings:
+        raise CaptureError(
+            "this capture holds no filings. A capture of nothing is one that did "
+            "not run, not a quarter in which nobody filed, and every answer read "
+            "from it would describe the filers instead")
     readings = []
-    for entry in payload.get("filings") or ():
+    for index, entry in enumerate(filings):
+        # BY POSITION, which is all an entry that is not a filing has. It was an
+        # AttributeError, which exits 1, and this package's contract reads 1 as
+        # a filing that did not balance.
+        if not isinstance(entry, Mapping):
+            raise CaptureError(f"filings[{index}] is {type(entry).__name__}, not a "
+                               f"captured filing")
         name = str(entry.get("id") or "")
         if not name:
-            raise CaptureError("a captured filing carries no id; a reading that "
-                               "names nothing cannot be paired with a declaration")
+            raise CaptureError(f"filings[{index}]: a captured filing carries no id; "
+                               f"a reading that names nothing cannot be paired with "
+                               f"a declaration")
         unit = str(entry.get("unit") or "")
         if not unit:
             raise CaptureError(
