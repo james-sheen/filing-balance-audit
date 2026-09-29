@@ -124,9 +124,13 @@ is not true of none.
 
 ## Install
 
+It is not on PyPI and has no release yet, so it installs from this repository:
+
 ```bash
-pip install filing-balance-audit          # Stage 1: read, pair, report
-pip install 'filing-balance-audit[engine]' # + the engine, for `detect`
+git clone https://github.com/james-sheen/filing-balance-audit
+cd filing-balance-audit
+pip install .              # Stage 1: read, pair, report
+pip install '.[engine]'    # + the engine, for `detect`
 ```
 
 ```
@@ -199,7 +203,7 @@ the leg's whole subject.
 
 ## Status
 
-**Local and unpublished.** Not on PyPI and no repository created.
+**Unreleased.** The repository is public; nothing is on PyPI and no release is tagged.
 
 Both floors are probed. `arbiter-engine>=0.1.12` is measured: the suite fails on
 0.1.11, where an agreement block with no tolerance is still answered from a 5%

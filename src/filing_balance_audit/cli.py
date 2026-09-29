@@ -188,6 +188,11 @@ def cmd_detect(args: argparse.Namespace) -> int:
             "not_checked": {
                 "no_reading": sorted(fed.no_reading),
                 "incomplete": [f"{n}: {why}" for n, why in sorted(fed.incomplete)],
+                # A figure at or past 2**53 is not compared, because the engine's
+                # float would round the one-unit difference this audit exists to
+                # find. The feeder always kept these; the report dropped them, so a
+                # filing too large to check vanished from the output entirely.
+                "over_limit": [f"{n}: {why}" for n, why in sorted(fed.over_limit)],
                 "parts_reconcile_to_neither_side": sorted(fed.parts_incomplete),
                 "excluded": sorted(fed.excluded),
             },
@@ -208,6 +213,7 @@ def cmd_detect(args: argparse.Namespace) -> int:
     # could check is not a filing that balanced.
     print(f"  not checked -- {len(fed.no_reading):,} with no reading, "
           f"{len(fed.incomplete):,} missing a side, "
+          f"{len(fed.over_limit):,} too large to compare exactly, "
           f"{len(fed.parts_incomplete):,} whose components reconcile to neither side")
     print(f"OUTCOME exit={code} verdict={exit_contract.verdict(code)}")
     return code

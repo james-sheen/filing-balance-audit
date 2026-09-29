@@ -82,13 +82,23 @@ class FilingPoint:
                    for r in self._readings)
 
     @property
-    def reading(self) -> object:
+    def reading(self) -> float | None:
         """The assets figure, from the first unit that carries one.
 
-        The headline number, as text. `None` means the filing reported no assets
+        A float, because the core's protocol says `Optional[float]`: this returned
+        the figure as TEXT, and the core formats a live point's reading as a
+        number, so a declared-excluded filing that was still reporting crashed
+        `presence` outright. The exact figure is `assets_as_filed`, which is what
+        a restatement is compared on. `None` means the filing reported no assets
         at all, which is the core's *present and not reading* -- a different fact
         from a filing nobody filed.
         """
+        exact = self.assets_as_filed
+        return None if exact is None else float(exact)
+
+    @property
+    def assets_as_filed(self) -> str | None:
+        """The assets figure exactly as filed, every digit, or None."""
         for r in self._readings:
             if ASSET_TAG in r.values:
                 return str(r.values[ASSET_TAG])

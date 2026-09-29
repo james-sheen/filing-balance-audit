@@ -138,7 +138,10 @@ class FilingVocabulary:
             changes.append(f"stopped reporting in {unit}")
         for unit in sorted(after - before):
             changes.append(f"began reporting in {unit}")
-        was, now = getattr(old, "reading", None), getattr(new, "reading", None)
+        # Compared on the figure as filed, never on the protocol's float: two
+        # totals past 2**53 that differ by one are the same float.
+        was = getattr(old, "assets_as_filed", None)
+        now = getattr(new, "assets_as_filed", None)
         if was is not None and now is not None and was != now:
             changes.append(f"restated total assets: {was} -> {now}")
         return tuple(changes)
